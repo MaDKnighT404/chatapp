@@ -11,7 +11,7 @@ interface AudioPlayerProps {
 	audioId: string;
 }
 
-const AudioPlayer: FC<AudioPlayerProps> = ({sender, audioUrl, id, setAudioId, audioId}) => {
+export const AudioPlayer: FC<AudioPlayerProps> = ({sender, audioUrl, id, setAudioId, audioId}) => {
 	const [isPlaying, setPlaying] = useState(false);
 	const [isMediaLoaded, setMediaLoaded] = useState(false);
 	const [isLoaded, setLoaded] = useState(false);
