@@ -17,6 +17,6 @@
       "src/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/components/AudioPlayer.tsx", "src/components/Login.tsx"],
   "exclude": ["node_modules"]
 }
