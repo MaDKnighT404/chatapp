@@ -1,8 +1,9 @@
 import { CircularProgress } from '@mui/material';
 import React from 'react';
 import SidebarListItem from './SidebarListItem';
+import type { Room } from 'src/Types';
 
-const SideBarList = ({ title, data }) => {
+const SideBarList = ({ title, data }: { title: string; data: Room[] }) => {
 	if (!data) {
 		return (
 			<div className="loader__container sidebar__loader">

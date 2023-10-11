@@ -1,8 +1,9 @@
 import { Avatar } from '@mui/material';
 import Link from 'next/link';
 import React from 'react';
+import type { Room } from 'src/Types';
 
-const SidebarListItem = ({ item }) => {
+const SidebarListItem = ({ item }: { item: Room }) => {
 	return (
 		<Link
 			className="link"
@@ -11,7 +12,7 @@ const SidebarListItem = ({ item }) => {
 			<div className="sidebar__chat">
 				<div className="avatar__container">
 					<Avatar
-						src={item.photoURL || `https://avatars.dicebear.com/api/jdenticon/${item.id}.svg`}
+						src={item.photoURL || `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${item.id}`}
 						style={{ width: 45, height: 45 }}
 					/>
 				</div>
