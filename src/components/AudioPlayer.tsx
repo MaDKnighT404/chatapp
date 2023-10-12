@@ -1,7 +1,7 @@
-import {PauseRounded, PlayArrowRounded} from '@mui/icons-material';
-import {CircularProgress} from '@mui/material';
-import {useEffect, useRef, useState} from 'react';
-import {FC, ChangeEvent} from 'react';
+import { PauseRounded, PlayArrowRounded } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
+import { FC, ChangeEvent } from 'react';
 
 interface AudioPlayerProps {
 	sender?: boolean;
@@ -11,7 +11,7 @@ interface AudioPlayerProps {
 	audioId: string;
 }
 
-export const AudioPlayer: FC<AudioPlayerProps> = ({sender, audioUrl, id, setAudioId, audioId}) => {
+export const AudioPlayer: FC<AudioPlayerProps> = ({ sender, audioUrl, id, setAudioId, audioId }) => {
 	const [isPlaying, setPlaying] = useState(false);
 	const [isMediaLoaded, setMediaLoaded] = useState(false);
 	const [isLoaded, setLoaded] = useState(false);
@@ -20,9 +20,8 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({sender, audioUrl, id, setAudi
 	const [duration, setDuration] = useState('');
 	const totalDuration = useRef('');
 	const audio = useRef(new Audio(audioUrl));
-	const interval = useRef();
+	const interval = useRef<ReturnType<typeof setInterval> | null>(null);
 	const isUploading = useRef(audioUrl === 'uploading');
-
 
 	useEffect(() => {
 		if (isUploading.current && audioUrl !== 'uploading') {
@@ -54,7 +53,9 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({sender, audioUrl, id, setAudi
 			});
 
 			audio.current.addEventListener('ended', () => {
-				clearInterval(interval.current);
+				if (typeof interval.current === 'number' || interval.current instanceof NodeJS.Timeout) {
+					clearInterval(interval.current);
+				}
 				setDuration(totalDuration.current);
 				setSliderValue(0);
 				setPlaying(false);
@@ -82,16 +83,12 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({sender, audioUrl, id, setAudi
 		});
 	}
 
-	function formatTime(time: number) {
-		let minutes = Math.floor(time / 60);
-		let seconds = Math.floor(time - minutes * 60);
+	function formatTime(time: number): string {
+		let minutesNum = Math.floor(time / 60);
+		let secondsNum = Math.floor(time - minutesNum * 60);
 
-		if (minutes < 10) {
-			minutes = `0${minutes}`;
-		}
-		if (seconds < 10) {
-			seconds = `0${seconds}`;
-		}
+		let minutes = minutesNum < 10 ? `0${minutesNum}` : `${minutesNum}`;
+		let seconds = secondsNum < 10 ? `0${secondsNum}` : `${secondsNum}`;
 
 		return `${minutes}:${seconds}`;
 	}
@@ -108,7 +105,7 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({sender, audioUrl, id, setAudi
 	function updateSlider() {
 		let sliderPosition = 0;
 
-		const {currentTime, duration} = audio.current;
+		const { currentTime, duration } = audio.current;
 		if (typeof duration === 'number') {
 			sliderPosition = currentTime * (100 / duration);
 			setSliderValue(sliderPosition);
@@ -119,19 +116,21 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({sender, audioUrl, id, setAudi
 
 	function stopAudio() {
 		audio.current.pause();
-		clearInterval(interval.current);
+		if (typeof interval.current === 'number' || interval.current instanceof NodeJS.Timeout) {
+			clearInterval(interval.current);
+		}
 		setPlaying(false);
 		setDuration(totalDuration.current);
 	}
 
 	function scrubAudio(event: ChangeEvent<HTMLInputElement>) {
 		const value = event.target.value;
-		const {duration} = audio.current;
+		const { duration } = audio.current;
 
 		if (isMediaLoaded) {
-			const seekTo = duration * (value / 100);
+			const seekTo = duration * (+value / 100);
 			audio.current.currentTime = seekTo;
-			setSliderValue(value);
+			setSliderValue(+value);
 		}
 	}
 
@@ -150,7 +149,7 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({sender, audioUrl, id, setAudi
 				) : null}
 				<div>
 					<span
-						style={{width: `${sliderValue}%`}}
+						style={{ width: `${sliderValue}%` }}
 						className="audioplayer__slider--played"
 					/>
 					<input
