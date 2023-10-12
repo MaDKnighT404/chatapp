@@ -13,6 +13,7 @@ const useAuthUser = () => {
 				if (!snapshot.exists()) {
 					setDoc(snapshot.ref, {
 						name: user.displayName,
+						nameLowerCase: user?.displayName?.toLowerCase(),
 						photoURL: user.photoURL,
 						timestamp: serverTimestamp(),
 					});

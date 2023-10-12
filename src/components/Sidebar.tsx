@@ -52,6 +52,7 @@ const Sidebar = ({ user }: { user: User }) => {
 			const roomsRef = collection(db, 'rooms');
 			const newRoom = await addDoc(roomsRef, {
 				name: roomName,
+				nameLowerCase: roomName.toLowerCase(),
 				timestamp: serverTimestamp(),
 			});
 			setCreatingRoom(false);
@@ -63,11 +64,25 @@ const Sidebar = ({ user }: { user: User }) => {
 
 	const searchUsersAndRooms = async (event: FormEvent<HTMLFormElement>) => {
 		event?.preventDefault();
+
 		const form = event.target as HTMLFormElement;
 		const searchElement = form.elements.namedItem('search') as HTMLInputElement;
 		const searchValue = searchElement.value;
-		const userQuary = query(collection(db, 'users'), where('name', '==', searchValue));
-		const roomQuary = query(collection(db, 'rooms'), where('name', '==', searchValue));
+		const searchValueLowercase = searchValue.toLowerCase();
+		const startAtValue = searchValueLowercase;
+		const endAtValue = searchValueLowercase + '\uf8ff';
+
+		const userQuary = query(
+			collection(db, 'users'),
+			where('nameLowerCase', '>=', startAtValue),
+			where('nameLowerCase', '<=', endAtValue)
+		);
+
+		const roomQuary = query(
+			collection(db, 'rooms'),
+			where('nameLowerCase', '>=', startAtValue),
+			where('nameLowerCase', '<=', endAtValue)
+		);
 
 		const userSnapshot = await getDocs(userQuary);
 		const roomSnapshot = await getDocs(roomQuary);
