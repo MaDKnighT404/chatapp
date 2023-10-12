@@ -4,7 +4,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from 'src/utils/firebase';
 
 const useAuthUser = () => {
-	const [user] = useAuthState(auth);
+	const [user, loading] = useAuthState(auth);
 
 	useEffect(() => {
 		if (user) {
@@ -21,7 +21,7 @@ const useAuthUser = () => {
 		}
 	}, [user]);
 
-	return user;
+	return { user, loading };
 };
 
 export default useAuthUser;

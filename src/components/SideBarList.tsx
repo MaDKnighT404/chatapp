@@ -1,9 +1,9 @@
 import { CircularProgress } from '@mui/material';
 import React from 'react';
 import SidebarListItem from './SidebarListItem';
-import type { Room } from 'src/Types';
+import type { ChatProperty, RoomProperty, SearchResult, UserProperty } from 'src/Types';
 
-const SideBarList = ({ title, data }: { title: string; data: Room[] }) => {
+const SideBarList = ({ title, data }: { title: string; data: RoomProperty[] | UserProperty[] | ChatProperty[] | SearchResult[] }) => {
 	if (!data) {
 		return (
 			<div className="loader__container sidebar__loader">

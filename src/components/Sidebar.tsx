@@ -11,14 +11,16 @@ import {
 	TextField,
 } from '@mui/material';
 import { User } from 'firebase/auth';
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import SidebarTab from './SidebarTab';
 import SideBarList from './SideBarList';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, serverTimestamp, where } from 'firebase/firestore';
 import { auth, db } from 'src/utils/firebase';
 import { useRouter } from 'next/router';
 import useRooms from 'src/hooks/useRooms';
-import type { Room } from 'src/Types';
+import useUsers from 'src/hooks/useUsers';
+import useChats from 'src/hooks/useChats';
+import { RoomProperty, SearchResult, UserProperty } from 'src/Types';
 
 const tabs = [
 	{
@@ -39,15 +41,11 @@ const Sidebar = ({ user }: { user: User }) => {
 	const [menu, setMenu] = useState(1);
 	const [isCreatingRoom, setCreatingRoom] = useState(false);
 	const [roomName, setRoomName] = useState('');
+	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 	const router = useRouter();
-	const rooms = useRooms() as Room[];
-	const data = [
-		{
-			id: 1,
-			name: 'John Doe',
-			photoURL: 'https://img.freepik.com/free-photo/a-cupcake-with-a-strawberry-on-top-and-a-strawberry-on-the-top_1340-35087.jpg',
-		},
-	];
+	const rooms = useRooms();
+	const chats = useChats(user);
+	const users = useUsers(user);
 
 	const createRoom = async () => {
 		if (roomName?.trim()) {
@@ -63,6 +61,32 @@ const Sidebar = ({ user }: { user: User }) => {
 		}
 	};
 
+	const searchUsersAndRooms = async (event: FormEvent<HTMLFormElement>) => {
+		event?.preventDefault();
+		const form = event.target as HTMLFormElement;
+		const searchElement = form.elements.namedItem('search') as HTMLInputElement;
+		const searchValue = searchElement.value;
+		const userQuary = query(collection(db, 'users'), where('name', '==', searchValue));
+		const roomQuary = query(collection(db, 'rooms'), where('name', '==', searchValue));
+
+		const userSnapshot = await getDocs(userQuary);
+		const roomSnapshot = await getDocs(roomQuary);
+
+		const userResults = userSnapshot?.docs.map((doc) => {
+			const id = doc.id > user.uid ? `${doc.id}${user.uid}` : `${user.uid}${doc.id}`;
+
+			return { ...doc.data(), id } as UserProperty;
+		});
+
+		const roomResults = roomSnapshot?.docs.map((doc) => ({
+			...(doc.data() as RoomProperty),
+			id: doc.id,
+		}));
+		const searchResults = [...userResults, ...roomResults];
+		setMenu(4);
+		setSearchResults(searchResults);
+	};
+
 	return (
 		<div className="sidebar">
 			{/* Header */}
@@ -70,14 +94,19 @@ const Sidebar = ({ user }: { user: User }) => {
 			<div className="sidebar__header">
 				<div className="sidebar__header--left">
 					<Avatar
-						rel="noreferrer"
+						imgProps={{ referrerPolicy: 'no-referrer' }}
 						src={user.photoURL || undefined}
 						alt={user.displayName || undefined}
 					/>
 					<h4>{user.displayName}</h4>
 				</div>
 				<div className="sidebar__header--right">
-					<IconButton onClick={() => auth.signOut()}>
+					<IconButton
+						onClick={() => {
+							router.push(`/`);
+							auth.signOut();
+						}}
+					>
 						<ExitToApp />
 					</IconButton>
 				</div>
@@ -86,7 +115,10 @@ const Sidebar = ({ user }: { user: User }) => {
 			{/* Search */}
 
 			<div className="sidebar__search">
-				<form className="sidebar__search--container">
+				<form
+					onSubmit={searchUsersAndRooms}
+					className="sidebar__search--container"
+				>
 					<SearchOutlined />
 					<input
 						type="text"
@@ -115,7 +147,7 @@ const Sidebar = ({ user }: { user: User }) => {
 			{menu === 1 ? (
 				<SideBarList
 					title="Chats"
-					data={data}
+					data={chats}
 				/>
 			) : menu === 2 ? (
 				<SideBarList
@@ -125,12 +157,12 @@ const Sidebar = ({ user }: { user: User }) => {
 			) : menu === 3 ? (
 				<SideBarList
 					title="Users"
-					data={data}
+					data={users}
 				/>
 			) : menu === 4 ? (
 				<SideBarList
 					title="Search Results"
-					data={data}
+					data={searchResults}
 				/>
 			) : null}
 
