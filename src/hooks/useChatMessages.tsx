@@ -11,7 +11,6 @@ const useChatMessages = (roomId: string) => {
 		...doc.data(),
 		id: doc.id,
   }));
-  console.log('hook', messages)
 	return messages as MessagesProperty[];
 };
 

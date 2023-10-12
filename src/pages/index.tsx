@@ -1,4 +1,3 @@
-
 import { CircularProgress } from '@mui/material';
 import Login from 'src/components/Login';
 import Sidebar from 'src/components/Sidebar';
@@ -9,7 +8,11 @@ export default function Home() {
 	const { user, loading } = useAuthUser();
 
 	if (loading) {
-		return <CircularProgress />;
+		return (
+			<div className="chat__deleting">
+				<CircularProgress />
+			</div>
+		);
 	}
 
 	if (!user) return <Login />;

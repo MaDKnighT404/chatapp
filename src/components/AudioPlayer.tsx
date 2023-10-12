@@ -4,8 +4,8 @@ import {useEffect, useRef, useState} from 'react';
 import {FC, ChangeEvent} from 'react';
 
 interface AudioPlayerProps {
-	sender?: string;
-	audioUrl: string;
+	sender?: boolean;
+	audioUrl?: string;
 	id: string;
 	setAudioId: (id: string) => void;
 	audioId: string;
@@ -22,6 +22,7 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({sender, audioUrl, id, setAudi
 	const audio = useRef(new Audio(audioUrl));
 	const interval = useRef();
 	const isUploading = useRef(audioUrl === 'uploading');
+
 
 	useEffect(() => {
 		if (isUploading.current && audioUrl !== 'uploading') {

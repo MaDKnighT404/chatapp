@@ -1,15 +1,9 @@
-import {nanoid} from 'nanoid';
+import { nanoid } from 'nanoid';
+import { AudioResult, Recorder } from 'src/Types';
 
-type AudioResult = {
-	audioFile: File;
-	audioUrl: string;
-	play: () => void;
-	audioName: string;
-};
-
-export default function recordAudio() {
+export default function recordAudio(): Promise<Recorder> {
 	return new Promise((resolve) => {
-		navigator.mediaDevices.getUserMedia({audio: true}).then((stream) => {
+		navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
 			const mediaRecorder = new MediaRecorder(stream);
 			const audioChunks: Blob[] = [];
 
@@ -33,7 +27,7 @@ export default function recordAudio() {
 						function play() {
 							audio.play();
 						}
-						resolve({audioFile, audioUrl, play, audioName});
+						resolve({ audioFile, audioUrl, play, audioName });
 					});
 
 					mediaRecorder.stop();
@@ -43,7 +37,7 @@ export default function recordAudio() {
 				});
 			}
 
-			resolve({start, stop});
+			resolve({ start, stop });
 		});
 	});
 }

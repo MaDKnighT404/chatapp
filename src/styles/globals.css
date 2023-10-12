@@ -940,10 +940,11 @@ em {
 	/* opacity: 0; */
 	/* background-color: transparent; */
 	padding: 0px 60px;
-	padding-bottom: 98px !important;
+	padding-bottom: 130px !important;
 	transition: opacity 200ms;
 	position: relative;
-	height: calc(100% - 68px);
+	height: 100dvh;
+	overflow-y: auto;
 }
 
 .chat__body--container::-webkit-scrollbar {

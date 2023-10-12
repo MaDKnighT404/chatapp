@@ -1,5 +1,5 @@
 import { AddPhotoAlternate, MoreVert } from '@mui/icons-material';
-import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
+import { Avatar, CircularProgress, IconButton, Menu, MenuItem } from '@mui/material';
 import { User } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { ChangeEvent, FormEvent, useState } from 'react';
@@ -9,10 +9,20 @@ import MediaPreview from './MediaPreview';
 import ChatFooter from './ChatFooter';
 import ChatMessages from './ChatMessages';
 import { nanoid } from 'nanoid';
-import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import {
+	addDoc,
+	collection,
+	deleteDoc,
+	doc,
+	getDocs,
+	query,
+	serverTimestamp,
+	setDoc,
+	updateDoc,
+} from 'firebase/firestore';
 import { db, storage } from 'src/utils/firebase';
 import Compressor from 'compressorjs';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import useChatMessages from 'src/hooks/useChatMessages';
 
 const Chat = ({ user }: { user: User }) => {
@@ -20,6 +30,10 @@ const Chat = ({ user }: { user: User }) => {
 	const [image, setImage] = useState<File | null>(null);
 	const [input, setInput] = useState('');
 	const [src, setSrc] = useState<string>('');
+	const [audioId, setAudioId] = useState('');
+	const [openMenu, setOpenMenu] = useState<null | HTMLElement>(null);
+
+	const [isDeleting, setIsDeleting] = useState(false);
 	const roomId = (router.query.roomId ?? '') as string;
 	const userId = user.uid;
 	const room = useRoom(roomId, userId) as RoomProperty;
@@ -83,6 +97,40 @@ const Chat = ({ user }: { user: User }) => {
 		}
 	};
 
+	const deleteRoom = async () => {
+		setOpenMenu(null);
+		setIsDeleting(true);
+
+		try {
+			const userChatsRef = doc(db, `users/${userId}/chats/${roomId}`);
+			const roomRef = doc(db, `rooms/${roomId}`);
+			const roomMessageRef = collection(db, `rooms/${roomId}/messages`);
+			const roomMessages = await getDocs(query(roomMessageRef));
+			const audioFiles: string[] = [];
+			const imagesFiles: string[] = [];
+
+			roomMessages?.docs.forEach((doc) => {
+				if (doc.data().audioName) {
+					audioFiles.push(doc.data().audioName);
+					console.log(audioFiles);
+				} else if (doc.data().audioName) {
+					imagesFiles.push(doc.data().imageName);
+				}
+			});
+			await Promise.all([
+				deleteDoc(userChatsRef),
+				deleteDoc(roomRef),
+				...roomMessages.docs.map((doc) => deleteDoc(doc.ref)),
+				...imagesFiles.map((imageName) => deleteObject(ref(storage, `images/${imageName}`))),
+				...audioFiles.map((audioName) => deleteObject(ref(storage, `audio/${audioName}`))),
+			]);
+		} catch (error) {
+			console.log('Error deleting room:', error);
+		} finally {
+			setIsDeleting(false);
+		}
+	};
+
 	if (!room) return null;
 
 	return (
@@ -120,16 +168,18 @@ const Chat = ({ user }: { user: User }) => {
 							<AddPhotoAlternate />
 						</label>
 					</IconButton>
-					<IconButton>
+					<IconButton onClick={(event) => setOpenMenu(event.currentTarget)}>
 						<MoreVert />
 					</IconButton>
 
 					<Menu
 						id="menu"
-						open={false}
+						anchorEl={openMenu}
+						open={!!openMenu}
+						onClose={() => setOpenMenu(null)}
 						keepMounted
 					>
-						<MenuItem>Delete Room</MenuItem>
+						<MenuItem onClick={deleteRoom}>Delete Room</MenuItem>
 					</Menu>
 				</div>
 			</div>
@@ -139,6 +189,8 @@ const Chat = ({ user }: { user: User }) => {
 						messages={messages}
 						user={user}
 						roomId={roomId}
+						audioId={audioId}
+						setAudioId={setAudioId}
 					/>
 				</div>
 			</div>
@@ -156,7 +208,14 @@ const Chat = ({ user }: { user: User }) => {
 				room={room}
 				roomId={roomId}
 				sendMessage={sendMessage}
+				setAudioId={setAudioId}
 			/>
+
+			{isDeleting && (
+				<div className="chat__deleting">
+					<CircularProgress />
+				</div>
+			)}
 		</div>
 	);
 };

@@ -2,8 +2,21 @@ import { CircularProgress } from '@mui/material';
 import { User } from 'firebase/auth';
 import Image from 'next/image';
 import { MessagesProperty } from 'src/Types';
+import { AudioPlayer } from './AudioPlayer';
 
-const ChatMessages = ({ messages, user, roomId }: { messages: MessagesProperty[]; user: User; roomId: string }) => {
+const ChatMessages = ({
+	messages,
+	user,
+	roomId,
+	audioId,
+	setAudioId,
+}: {
+	messages: MessagesProperty[];
+	user: User;
+	roomId: string;
+	audioId: string;
+	setAudioId: (value: string) => void;
+}) => {
 	if (!messages) return null;
 
 	return messages.map((message) => {
@@ -33,7 +46,17 @@ const ChatMessages = ({ messages, user, roomId }: { messages: MessagesProperty[]
 					</div>
 				) : null}
 
-				{message.audioName ? <div></div> : <span className="chat__message--message">{message.message}</span>}
+				{message.audioName ? (
+					<AudioPlayer
+						sender={isSender}
+						audioUrl={message.audioUrl}
+						id={message.id}
+						audioId={audioId}
+						setAudioId={setAudioId}
+					/>
+				) : (
+					<span className="chat__message--message">{message.message}</span>
+				)}
 
 				<span className="chat__timestamp">{message.time}</span>
 			</div>
