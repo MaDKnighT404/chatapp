@@ -1,6 +1,5 @@
 import { Avatar } from '@mui/material';
 import Link from 'next/link';
-import React from 'react';
 import type { ChatProperty, RoomProperty, UserProperty } from 'src/Types';
 
 const SidebarListItem = ({ item }: { item: RoomProperty | UserProperty | ChatProperty }) => {

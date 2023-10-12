@@ -1,5 +1,4 @@
 import { CircularProgress } from '@mui/material';
-import React from 'react';
 import SidebarListItem from './SidebarListItem';
 import type { ChatProperty, RoomProperty, SearchResult, UserProperty } from 'src/Types';
 import { CancelOutlined, SearchOutlined } from '@mui/icons-material';

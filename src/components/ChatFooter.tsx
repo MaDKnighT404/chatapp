@@ -1,6 +1,6 @@
 import { CancelRounded, CheckCircleRounded, MicRounded, Send } from '@mui/icons-material';
 import { User } from 'firebase/auth';
-import React, { ChangeEvent, FormEvent } from 'react';
+import { ChangeEvent, FormEvent } from 'react';
 import { RoomProperty } from 'src/Types';
 
 const ChatFooter = ({

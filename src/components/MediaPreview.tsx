@@ -1,6 +1,5 @@
 import { CloseRounded } from '@mui/icons-material';
 import Image from 'next/image';
-import React from 'react';
 
 const MediaPreview = ({ src, closePreview }: { src: string; closePreview: () => void }) => {
 	if (!src) return null;

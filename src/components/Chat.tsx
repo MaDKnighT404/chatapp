@@ -2,16 +2,18 @@ import { AddPhotoAlternate, MoreVert } from '@mui/icons-material';
 import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
 import { User } from 'firebase/auth';
 import { useRouter } from 'next/router';
-import React, { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
 import { RoomProperty } from 'src/Types';
 import useRoom from 'src/hooks/useRoom';
 import MediaPreview from './MediaPreview';
 import ChatFooter from './ChatFooter';
+import ChatMessages from './ChatMessages';
 import { nanoid } from 'nanoid';
 import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db, storage } from 'src/utils/firebase';
 import Compressor from 'compressorjs';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import useChatMessages from 'src/hooks/useChatMessages';
 
 const Chat = ({ user }: { user: User }) => {
 	const router = useRouter();
@@ -21,6 +23,7 @@ const Chat = ({ user }: { user: User }) => {
 	const roomId = (router.query.roomId ?? '') as string;
 	const userId = user.uid;
 	const room = useRoom(roomId, userId) as RoomProperty;
+	const messages = useChatMessages(roomId);
 
 	const showPreview = (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files && event.target.files[0];
@@ -130,10 +133,21 @@ const Chat = ({ user }: { user: User }) => {
 					</Menu>
 				</div>
 			</div>
+			<div className="chat__body-container">
+				<div className="chat__body">
+					<ChatMessages
+						messages={messages}
+						user={user}
+						roomId={roomId}
+					/>
+				</div>
+			</div>
+
 			<MediaPreview
 				src={src}
 				closePreview={closePreview}
 			/>
+
 			<ChatFooter
 				input={input}
 				onChange={(event: ChangeEvent<HTMLInputElement>) => setInput(event.target.value)}
